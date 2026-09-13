@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 process.chdir(resolve(import.meta.dirname,'..'));
 const {version}=JSON.parse(await readFile('package.json','utf8'));await mkdir('release',{recursive:true});
 const offline={};const base=`ime-dictionary-exporter-offline-${version}/`;
-for(const [from,to] of [['dist/index.html','打开词库.html'],['docs/使用说明.md','使用说明.md'],['docs/词库数量说明.md','词库数量说明.md'],['docs/词库来源.md','词库来源.md'],['LICENSE','LICENSE'],['dist/THIRD_PARTY_NOTICES.txt','THIRD_PARTY_NOTICES.txt']])offline[base+to]=new Uint8Array(await readFile(from));
+offline[base+'打开词库.html']=new Uint8Array(await readFile('dist/index.html'));
 const source={};async function collect(path=''){
  for(const item of await readdir(path||'.',{withFileTypes:true})){
   if(['node_modules','dist','release','.git','.test-build'].includes(item.name))continue;

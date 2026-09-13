@@ -1,6 +1,6 @@
 # 使用 GitHub Pages 发布词库工具
 
-适用于「多平台输入法自定义词库导出器」1.1.1 及以后版本。发布后，使用者可以直接打开网址，在 Mac 或 Windows 浏览器中编辑词库和导出输入法文件，无需安装 Node.js。
+适用于「多平台输入法自定义词库导出器」1.2.0 及以后版本。发布后，使用者可以直接打开网址，在 Mac 或 Windows 浏览器中编辑词库和导出输入法文件，无需安装 Node.js。
 
 本教程中的 `YOUR-USERNAME` 和 `ime-dictionary-exporter` 是示例，请按自己的账号与仓库名替换。当前交付的是发布配置与文件，尚未生成实际 GitHub Pages 网址。
 
@@ -8,7 +8,7 @@
 
 ### 上传源码
 
-解压 `ime-dictionary-exporter-source-1.1.1.zip`，按 [项目上传GitHub教程](项目上传GitHub教程.md)把源码上传到自己的 GitHub 仓库。公开分享可使用 Public 仓库；GitHub Free 支持公开仓库的 Pages。[GitHub Pages 说明](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
+解压 `ime-dictionary-exporter-source-1.2.0.zip`，按 [项目上传GitHub教程](项目上传GitHub教程.md)把源码上传到自己的 GitHub 仓库。公开分享可使用 Public 仓库；GitHub Free 支持公开仓库的 Pages。[GitHub Pages 说明](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
 
 确认仓库里有 `package.json`、`src` 和 `.github/workflows/pages.yml`，默认分支为 `main`。
 
@@ -42,7 +42,7 @@ https://YOUR-USERNAME.github.io/ime-dictionary-exporter/
 
 ## pages ZIP 的用途
 
-`ime-dictionary-exporter-pages-1.1.1.zip` 是已构建的静态文件，方便需要手动部署时使用。按上述源码自动发布流程，不需要再上传这个 ZIP，也不需要第二个仓库。仅希望普通用户在线使用时，发布 Pages 即可，Release 是可选的本地下载入口。
+`ime-dictionary-exporter-pages-1.2.0.zip` 是已构建的静态文件，方便需要手动部署时使用。按上述源码自动发布流程，不需要再上传这个 ZIP，也不需要第二个仓库。仅希望普通用户在线使用时，发布 Pages 即可，Release 是可选的本地下载入口。
 
 ## 保存、备份与迁移
 

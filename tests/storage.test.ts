@@ -28,3 +28,28 @@ assert.equal(databaseName({protocol:'file:',href:'file:///any/folder/index.html'
 assert.equal(databaseName({protocol:'https:',href:'https://example.github.io/first/'}),databaseName({protocol:'https:',href:'https://example.github.io/first/index.html?version=2'}));
 assert.notEqual(databaseName({protocol:'https:',href:'https://example.github.io/first/'}),databaseName({protocol:'https:',href:'https://example.github.io/second/'}));
 console.log('PASS: scheme order/deletion persist and restore, last-scheme validation, legacy file storage, hosted project isolation.');
+
+// Clearing erases dictionary content, persists across reloads, and blocks stale writers.
+const clearing=new LocalRepository(factory,'clear-test');const clearStart=await clearing.load();
+const privateWords=structuredClone(clearStart.document);privateWords.profiles[0].entries.unshift({id:'erase-me',code:'eraseme',phrase:'待清除的测试词',priority:1,enabled:true});await clearing.save(privateWords,0);
+const staleWriter=new LocalRepository(factory,'clear-test');await staleWriter.load();
+const unrelated=new LocalRepository(factory,'unrelated-test');const unrelatedStart=await unrelated.load();
+await assert.rejects(()=>clearing.clear(0),/另一个窗口/);assert.deepEqual((await clearing.load()).document,privateWords);
+await clearing.clear(1);assert.equal(clearing.recoveryText(),'null');await assert.rejects(()=>clearing.load(),/已清除/);
+const afterClear=new LocalRepository(factory,'clear-test');await assert.rejects(()=>afterClear.load(),/已清除/);
+assert.deepEqual((await unrelated.load()).document,unrelatedStart.document);
+const inspect=await new Promise<IDBDatabase>((resolve,reject)=>{const r=factory.open('clear-test');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
+const marker=await new Promise<unknown>((resolve,reject)=>{const r=inspect.transaction('workspace').objectStore('workspace').get('current');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
+assert.deepEqual(marker,{version:1,cleared:true,revision:2});inspect.close();
+await assert.rejects(()=>staleWriter.save(privateWords,1),/已清除/);
+await afterClear.restart();const restarted=await afterClear.load();assert.deepEqual(restarted.document,initialDocument());assert.equal(restarted.revision,3);
+await assert.rejects(()=>staleWriter.save(privateWords,1),/另一个窗口/);await afterClear.save(privateWords,3);assert.deepEqual((await afterClear.load()).document,privateWords);
+clearing.close();staleWriter.close();afterClear.close();unrelated.close();
+const tempClear=new LocalRepository({open(){throw Error('unavailable');}} as unknown as IDBFactory);await tempClear.load();await tempClear.clear(0);await assert.rejects(()=>tempClear.load(),/已清除/);await assert.rejects(()=>tempClear.save(initialDocument(),0),/已清除/);await tempClear.restart();assert.equal((await tempClear.load()).revision,2);
+console.log('PASS: clear erases word content, leaves only a revision marker, survives reload, preserves other stores, rejects stale deletion/writes and supports explicit restart/restore; temporary mode clear.');
+const failureRepo=new LocalRepository(factory,'clear-failure');const beforeFailure=await failureRepo.load();
+const {IDBObjectStore}=await import('fake-indexeddb');const put=IDBObjectStore.prototype.put;
+IDBObjectStore.prototype.put=function(value:unknown,key?:IDBValidKey){if((value as {cleared?:boolean})?.cleared)throw new Error('simulated write failure');return put.call(this,value,key);};
+try{await assert.rejects(()=>failureRepo.clear(beforeFailure.revision),/simulated write failure/);}finally{IDBObjectStore.prototype.put=put;}
+assert.deepEqual((await failureRepo.load()).document,beforeFailure.document);failureRepo.close();
+console.log('PASS: aborted clear leaves the original dictionary intact.');

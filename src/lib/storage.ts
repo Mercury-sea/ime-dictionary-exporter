@@ -8,7 +8,11 @@ export function databaseName(location:Pick<Location,'protocol'|'href'>|undefined
  return 'sis-lexicon-web-v1:'+new URL('.',location.href).pathname;
 }
 function seed():Snapshot{return {version:1,document:initialDocument(),revision:0,updatedAt:new Date().toISOString()};}
+type ClearedRecord={version:1;cleared:true;revision:number};
+function isCleared(value:unknown):value is ClearedRecord{const v=value as ClearedRecord;return !!v&&v.version===1&&v.cleared===true&&Number.isSafeInteger(v.revision)&&v.revision>=0;}
+export class DataClearedError extends Error{constructor(){super('词库数据已清除。');this.name='DataClearedError';}}
 function validate(value:unknown):Snapshot {
+ if(isCleared(value))throw new DataClearedError();
  const v=value as Snapshot;
  if(!v||v.version!==1||!Number.isInteger(v.revision)||v.revision<0||typeof v.updatedAt!=='string')throw new Error('本地保存数据无法读取。请先下载原始数据，再从 JSON 备份恢复。');
  return {...v,document:documentSchema.parse(v.document)};
@@ -18,6 +22,7 @@ export class LocalRepository {
  private memory:Snapshot|null=null;
  private opening:Promise<IDBDatabase>|null=null;
  private temporary=false;
+ private clearedRevision:number|null=null;
  private raw:unknown;
  mode:'local'|'memory'='local';
  constructor(private factory:IDBFactory|undefined=globalThis.indexedDB,private name=databaseName()){}
@@ -37,6 +42,7 @@ export class LocalRepository {
   return this.opening;
  }
  async load():Promise<Snapshot>{
+  if(this.temporary&&this.clearedRevision!==null)throw new DataClearedError();
   if(this.temporary){this.memory??=seed();return structuredClone(this.memory);}
   let db:IDBDatabase;
   try{db=await this.open();}catch{this.mode='memory';this.temporary=true;this.memory??=seed();return structuredClone(this.memory);}
@@ -53,6 +59,7 @@ export class LocalRepository {
   const valid=documentSchema.parse(document);
   if(new TextEncoder().encode(JSON.stringify(valid)).length>1800000)throw new Error('词库超过容量限制（1.8 MB），请减少词条。');
   const conflict=()=>new Error('词库已在另一个窗口更新。请刷新当前页面后重试。');
+  if(this.temporary&&this.clearedRevision!==null)throw new DataClearedError();
   if(this.temporary){if(this.memory?.revision!==expectedRevision)throw conflict();this.memory={version:1,document:valid,revision:expectedRevision+1,updatedAt:new Date().toISOString()};return structuredClone(this.memory);}
   const db=await this.open();return new Promise((resolve,reject)=>{
    const tx=db.transaction(STORE,'readwrite'),store=tx.objectStore(STORE);let result:Snapshot;let failure:unknown;
@@ -62,7 +69,31 @@ export class LocalRepository {
    tx.onerror=()=>{};
   });
  }
- async startTemporary(){this.temporary=true;this.mode='memory';this.memory=seed();return structuredClone(this.memory);}
+ async clear(expectedRevision:number):Promise<void>{
+  const conflict=()=>new Error('词库已在另一个窗口更新。请刷新后核对数据，再清除。');
+  if(this.temporary){if(this.memory?.revision!==expectedRevision)throw conflict();this.clearedRevision=expectedRevision+1;this.memory=null;this.raw=undefined;return;}
+  const db=await this.open();
+  await new Promise<void>((resolve,reject)=>{
+   const tx=db.transaction(STORE,'readwrite'),store=tx.objectStore(STORE);let failure:unknown;
+   const r=store.get(KEY);r.onsuccess=()=>{try{
+    if(validate(r.result).revision!==expectedRevision)throw conflict();
+    // Retain only a content-free revision marker: stale windows cannot resurrect deleted words.
+    store.put({version:1,cleared:true,revision:expectedRevision+1} satisfies ClearedRecord,KEY);
+   }catch(e){failure=e;tx.abort();}};
+   tx.oncomplete=()=>{this.raw=undefined;this.memory=null;resolve();};
+   tx.onabort=()=>reject(failure||new Error('清除失败，词库数据仍保留。请重试。'));tx.onerror=()=>{};
+  });
+ }
+ async restart():Promise<void>{
+  if(this.temporary){if(this.clearedRevision!==null){this.memory={...seed(),revision:this.clearedRevision+1};this.clearedRevision=null;}return;}
+  const db=await this.open();
+  await new Promise<void>((resolve,reject)=>{
+   const tx=db.transaction(STORE,'readwrite'),store=tx.objectStore(STORE);let failure:unknown;
+   const r=store.get(KEY);r.onsuccess=()=>{try{if(isCleared(r.result))store.put({...seed(),revision:r.result.revision+1},KEY);else if(r.result!==undefined)validate(r.result);}catch(e){failure=e;tx.abort();}};
+   tx.oncomplete=()=>resolve();tx.onabort=()=>reject(failure||new Error('重新打开失败，请重试。'));tx.onerror=()=>{};
+  });
+ }
+ async startTemporary(){this.temporary=true;this.mode='memory';this.clearedRevision=null;this.memory=seed();return structuredClone(this.memory);}
  close(){this.db?.close();this.db=null;this.opening=null;}
 }
 export const repository=new LocalRepository();

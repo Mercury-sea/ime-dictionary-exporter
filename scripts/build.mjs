@@ -5,12 +5,11 @@ import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises';
 import { dirname, resolve, join } from 'node:path';
 const root=resolve(import.meta.dirname,'..');process.chdir(root);
 await mkdir('dist',{recursive:true});
-const js=await build({entryPoints:['src/main.tsx'],bundle:true,write:false,minify:true,format:'iife',platform:'browser',target:['chrome100','firefox100','safari15.4'],jsx:'automatic',metafile:true,legalComments:'inline',define:{'process.env.NODE_ENV':'"production"'},tsconfig:'tsconfig.json'});
+const js=await build({entryPoints:['src/main.tsx'],bundle:true,write:false,minify:true,format:'iife',platform:'browser',target:['chrome100','firefox100','safari15.4'],jsx:'automatic',loader:{'.md':'text'},metafile:true,legalComments:'inline',define:{'process.env.NODE_ENV':'"production"'},tsconfig:'tsconfig.json'});
 const css=await postcss([tailwind()]).process(await readFile('src/styles.css','utf8'),{from:resolve('src/styles.css'),map:false});
 const favicon=await readFile('src/favicon.svg','utf8');
 const script=js.outputFiles[0].text.replace(/<\/script/gi,'<\\/script');
-const html=`<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"><title>多平台输入法自定义词库导出器</title><link rel="icon" href="data:image/svg+xml,${encodeURIComponent(favicon)}"><style>${css.css.replace(/<\/style/gi,'<\\/style')}</style></head><body><div id="root"></div><noscript>请启用浏览器 JavaScript 后重新打开。本工具不需要联网。</noscript><script>${script}</script></body></html>`;
-await writeFile('dist/index.html',html);
+let html=`<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"><title>多平台输入法自定义词库导出器</title><link rel="icon" href="data:image/svg+xml,${encodeURIComponent(favicon)}"><style>${css.css.replace(/<\/style/gi,'<\\/style')}</style></head><body><div id="root"></div><noscript>请启用浏览器 JavaScript 后重新打开。本工具不需要联网。</noscript><script>${script}</script></body></html>`;
 await writeFile('dist/.nojekyll','');
 await writeFile('dist/LICENSE',await readFile('LICENSE'));
 // Record licenses from bundled packages; the release also includes the vendored CSS license.
@@ -32,5 +31,8 @@ for(const dir of [...packageDirs].sort()){
 }
 notices+='\n'+await readFile('vendor/shadcn-tailwind-4.13.0.LICENSE.md','utf8');
 await writeFile('dist/THIRD_PARTY_NOTICES.txt',notices);
+const licensePayload=JSON.stringify({project:await readFile('LICENSE','utf8'),thirdParty:notices}).replace(/</g,'\\u003c');
+html=html.replace('<div id="root"></div>','<div id="root"></div><script id="license-data" type="application/json">'+licensePayload+'</script>');
+await writeFile('dist/index.html',html);
 if(/<(script|link)[^>]+(?:src|href)=["']https?:/i.test(html)||/@import\s/.test(css.css))throw new Error('发现未内联的网络资源');
 console.log(`单文件离线版已生成：dist/index.html (${Buffer.byteLength(html)} bytes)`);

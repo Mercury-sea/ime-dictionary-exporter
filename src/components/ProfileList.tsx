@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { GripVertical, Trash2 } from 'lucide-react';
 import type { Profile } from '@/lib/lexicon';
+import { InlineEdit } from '@/components/InlineEdit';
 
 type Drop = { id: string; after: boolean };
 type Drag = { id: string; pointer: number; x: number; y: number; moved: boolean; drop: Drop | null };
@@ -11,9 +12,10 @@ type Props = {
   onSelect: (profile: Profile) => void;
   onMove: (id: string, target: string, after: boolean) => void;
   onDelete: (id: string) => void;
+  onRename: (id: string, name: string) => Promise<void>;
 };
 
-export function ProfileList({ profiles, active, disabled, onSelect, onMove, onDelete }: Props) {
+export function ProfileList({ profiles, active, disabled, onSelect, onMove, onDelete, onRename }: Props) {
   const nav = useRef<HTMLElement>(null);
   const drag = useRef<Drag | null>(null);
   const [preview, setPreview] = useState<{ id: string; drop: Drop | null } | null>(null);
@@ -78,9 +80,13 @@ export function ProfileList({ profiles, active, disabled, onSelect, onMove, onDe
             const target = profiles[index + direction];
             if (target) { onMove(profile.id, target.id, direction > 0); setAnnouncement(`${profile.name}：请求移至第 ${index + direction + 1} 位`); }
           }}><GripVertical size={15}/></button>
-        <button className="profile-link" aria-current={profile.id === active ? 'true' : undefined} onClick={() => onSelect(profile)} title={profile.name}>
-          <span>{profile.name}</span><small title="按输入码＋词条计数">{profile.entries.length} 条</small>
-        </button>
+        <div className="profile-link" aria-current={profile.id === active ? 'true' : undefined} onClick={() => { if (!disabled) onSelect(profile); }}>
+          <InlineEdit value={profile.name} label={`词库名称 ${profile.name}`} disabled={disabled}
+            onSave={name => onRename(profile.id, name)} maxLength={40}>
+            <span>{profile.name}</span>
+          </InlineEdit>
+          <small title="按输入码＋词条计数">{profile.entries.length} 条</small>
+        </div>
         <button className="profile-delete" disabled={disabled || profiles.length < 2} aria-label={`删除词库 ${profile.name}`}
           title={profiles.length < 2 ? '至少保留一个词库方案' : `删除词库 ${profile.name}`}
           onClick={() => onDelete(profile.id)}><Trash2 size={14}/></button>

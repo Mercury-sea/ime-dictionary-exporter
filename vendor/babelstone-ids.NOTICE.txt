@@ -1,0 +1,23 @@
+BabelStone IDS：含女部件筛选所用字符表
+====================================
+维护者：Andrew West（魏安）
+来源：https://www.babelstone.co.uk/CJK/IDS.TXT
+资料日期：2025-06-27；获取日期：2026-09-15
+原文件 SHA-256：cc2a0a97e6a51ed6ebe59870ef2af66e83f3c3c27387d79b4441bb2d791d78b1
+
+本项目从该资料生成包含女部件的字符集合，并未将完整字典装入网页。
+生成方式：scripts/generate-female-components.py；结果：src/lib/female-components.json。
+优先 G 字形；无 G 时选择首个实际地区字形；不采用 X 假设字形。
+只按完整部件匹配；减笔、镜像、旋转分支停止展开。
+本资料独立于预置输入法词库，不改变原词库的来源署名。
+
+资料维护者的使用与格式权利声明（原文）：
+2. Under U.S. copyright law, data (i.e. a collection of facts) is not eligible to copyright protection (see
+<https://sco.library.emory.edu/research-data-management/publishing/copyright-data.html>), and as IDS descriptions
+for CJK ideographs are facts not original creative compositions, IDS sequences in themselves are not eligible for
+copyright protection (that is to say, you could no more copyright 彼 = ⿰彳皮 than you could copyright 1 + 1 = 2).
+Therefore, anyone is free to make use of the IDS data provided in this file for personal or commercial purposes
+without asking permission or providing attribution. I furthermore waive any copyright claims to the presentation
+format of the IDS data used in this file, so anyone is free to fork the file, or use it as the basis for a new IDS
+data set.
+

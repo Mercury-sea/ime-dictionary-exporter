@@ -30,6 +30,7 @@ for(const dir of [...packageDirs].sort()){
  if(!files.length)notices+=`许可标识：${pkg.license||'未声明'}。源码仓库：${JSON.stringify(pkg.repository||'见包元数据')}\n`;
 }
 notices+='\n'+await readFile('vendor/shadcn-tailwind-4.13.0.LICENSE.md','utf8');
+notices+='\n'+await readFile('vendor/babelstone-ids.NOTICE.txt','utf8');
 await writeFile('dist/THIRD_PARTY_NOTICES.txt',notices);
 const licensePayload=JSON.stringify({project:await readFile('LICENSE','utf8'),thirdParty:notices}).replace(/</g,'\\u003c');
 html=html.replace('<div id="root"></div>','<div id="root"></div><script id="license-data" type="application/json">'+licensePayload+'</script>');

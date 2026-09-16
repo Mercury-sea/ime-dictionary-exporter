@@ -20,15 +20,14 @@ function HelpDocument({text}:{text:string}){
  return <div className="help-document">{blocks}</div>;
 }
 function licenses():{project:string;thirdParty:string}{try{return JSON.parse(document.getElementById('license-data')?.textContent||'{}');}catch{return {project:'',thirdParty:''};}}
-export function HelpContent({onBackup,onClear,busy,mode,updated}:{onBackup:()=>void;onClear:()=>void;busy:boolean;mode:'local'|'memory';updated:string}){
+export function HelpContent({onBackup,updated}:{onBackup:()=>void;updated:string}){
  const [section,setSection]=useState('usage');const legal=licenses();
  return <>
-  <nav className="guide-menu" aria-label="指南章节">{[['usage','使用说明'],['counts','数量说明'],['source','词库来源'],['clear','清除数据']].map(([id,label])=><button key={id} aria-pressed={section===id} onClick={()=>setSection(id)}>{label}</button>)}</nav>
+  <nav className="guide-menu" aria-label="指南章节">{[['usage','使用说明'],['counts','数量说明'],['source','词库来源']].map(([id,label])=><button key={id} aria-pressed={section===id} onClick={()=>setSection(id)}>{label}</button>)}</nav>
   <div key={section} className="help-content guide-body">
    {section==='usage'&&<><HelpDocument text={usage}/><h3>各输入法导入方式</h3><div className="help-formats">{Object.entries(formats).map(([id,name])=><details key={id}><summary>{name}</summary><p>{guides[id as Format]}</p></details>)}</div><small>最近保存：{updated?new Date(updated).toLocaleString('zh-CN'):'—'}</small><Button variant="outline" onClick={onBackup}>下载完整备份</Button></>}
    {section==='counts'&&<HelpDocument text={counts}/>}
    {section==='source'&&<><HelpDocument text={source}/><details className="license-details"><summary>程序许可（MIT）</summary><pre>{legal.project}</pre></details><details className="license-details"><summary>第三方组件许可</summary><pre>{legal.thirdParty}</pre></details></>}
-   {section==='clear'&&<div className="clear-data-panel"><h3>{mode==='memory'?'清除当前临时会话':'清除此处保存的词库数据'}</h3><p>{mode==='memory'?'清除当前临时会话中的全部方案、词条和排序。此操作无法清除浏览器未允许本页面访问的已有存储。':'清除此页面正在使用的词库存储中的全部方案、词条和排序。共享这份存储的其他窗口也会受到影响。'}</p><p>已下载的 JSON 备份、输入法文件及本地文件夹需要自行删除。要保留编辑结果，请先下载完整备份。</p><p>{mode==='memory'?'完成后可关闭网页并删除本地使用包文件夹；临时会话不会保留清除状态。':'完成后可关闭网页并删除本地使用包文件夹。再次打开时，会先显示“数据已清除”，由你决定是否重新启用默认词库。'}</p><div className="clear-actions"><Button variant="outline" onClick={onBackup}>先下载完整备份</Button><Button variant="destructive" disabled={busy} onClick={onClear}>清除数据…</Button></div></div>}
   </div>
  </>;
 }

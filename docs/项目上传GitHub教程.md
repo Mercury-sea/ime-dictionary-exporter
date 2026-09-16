@@ -14,7 +14,7 @@
 
 ## 你现在怎么发
 
-1. 解压 `ime-dictionary-exporter-source-1.2.0.zip`，把里面的项目文件上传到同一个源码仓库的 `main` 分支。
+1. 解压 `ime-dictionary-exporter-source-1.5.1.zip`，把里面的项目文件上传到同一个源码仓库的 `main` 分支。
 2. 在仓库 **Settings → Pages → Source** 选择 **GitHub Actions**。
 3. 在 **Actions → Deploy GitHub Pages** 手动运行一次，成功后使用 GitHub 显示的网址。之后推送 `main` 会自动更新网页。[Pages 工作流说明](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)
 
@@ -22,7 +22,7 @@
 
 ## 想提供本地下载时，再发 Release
 
-在同一仓库创建 Release，标签例如 `v1.2.0`，对应此次上传的代码，附上 `ime-dictionary-exporter-offline-1.2.0.zip`。使用者解压后双击“打开词库.html”即可。
+在同一仓库创建 Release，标签例如 `v1.5.1`，对应此次上传的代码，附上 `ime-dictionary-exporter-offline-1.5.1.zip`。使用者解压后双击“打开词库.html”即可。
 
 不必再手动上传一份 source ZIP，GitHub 会自动提供该标签下的源码压缩包；采用上面的自动部署时，也不必上传 pages ZIP。
 

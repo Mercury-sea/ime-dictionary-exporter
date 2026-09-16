@@ -1,6 +1,7 @@
 import { zipSync, strToU8 } from 'fflate';
-import { Entry, Profile, Format, formats, ordered } from './lexicon';
+import { Entry, Profile, Format, formats, ordered, backupDocument } from './lexicon';
 import ms from './ms-header.json';
+import { withEntries } from './relations';
 export type Excluded={entry:Entry;reason:string};
 export type ExportPlan={entries:Entry[];excluded:Excluded[];notes:string[]};
 export const guides:Record<Format,string>={
@@ -59,7 +60,7 @@ export function exportPackage(profile:Profile,format:Format) {
  const plan=planExport(profile,format);if(!plan.entries.length)throw new Error('没有符合此格式要求的启用词条，请检查导出说明。');
  const files=nativeFiles(plan.entries,format);
  files['导入说明.txt']=strToU8(`她的词库 · ${profile.name}\n目标：${formats[format]}\n生成时间：${new Date().toISOString()}\n已导出 ${plan.entries.length} 条，未导出 ${plan.excluded.length} 条。\n\n${guides[format]}\n\n${plan.notes.join('\n')}\n\n建议先备份输入法中的原词库，再用少量词条试导入。不同版本的菜单和限制可能不同。\n本包不包含输入法软件，也不会自动安装。\n`);
- files['词库备份.json']=strToU8(JSON.stringify({version:1,profiles:[profile]},null,2));
+ files['词库备份.json']=strToU8(JSON.stringify(backupDocument({profiles:[withEntries(profile,profile.entries)]}),null,2));
  if(plan.excluded.length)files['未导出词条.csv']=strToU8('\ufeff输入码,词条,原因\r\n'+plan.excluded.map(x=>[x.entry.code,x.entry.phrase,x.reason].map(csv).join(',')).join('\r\n'));
  return zipSync(files,{level:6});
 }

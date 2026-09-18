@@ -244,6 +244,7 @@ body {
 .toolbar{flex-wrap:wrap}
 .toolbar .search{flex:1 1 180px}
 .toolbar .filter-select{flex-shrink:0}
+.toolbar .sort-select{flex-shrink:0;min-width:145px;font-size:13px}
 .toolbar .female-filter{height:36px;flex-shrink:0;font-size:13px;padding-inline:12px;color:var(--text-body);background:var(--surface);border-color:var(--border)}
 .toolbar .female-filter:hover{background:var(--surface-soft)}
 .toolbar .female-filter[aria-pressed=true]{background:var(--surface-selected);color:var(--text-accent);border-color:var(--text-accent);font-weight:600}
@@ -268,4 +269,14 @@ body {
 .header-tooltip-arrow{fill:var(--surface)}
 @media(max-width:650px){.profile-link .inline-edit-input{width:145px}.lexicon-panel td .inline-edit-input{padding:5px 3px;font-size:11px}.header-tooltip{max-width:min(260px,calc(100vw - 24px))}}
 .empty-state [data-slot=button]+[data-slot=button]{margin-left:8px}
+/* 隐藏浏览器默认数字箭头，统一为“上移提高优先级”的方向。 */
+.priority-field{display:flex;flex-direction:column;gap:8px}
+.priority-control{position:relative}
+.priority-control input{appearance:textfield;-moz-appearance:textfield;padding-right:40px}
+.priority-control input::-webkit-inner-spin-button,.priority-control input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.priority-arrows{position:absolute;inset:1px 1px 1px auto;width:32px;display:flex;flex-direction:column;border-left:1px solid var(--border)}
+.priority-arrows button{flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-body);border-radius:3px}
+.priority-arrows button:hover:not(:disabled){background:var(--surface-selected)}
+.priority-arrows button:disabled{opacity:.35;cursor:default}
+.priority-arrows button:focus-visible{outline:2px solid var(--text-accent);outline-offset:1px}
 @media(max-width:650px){.toolbar .search{flex-basis:100%}}

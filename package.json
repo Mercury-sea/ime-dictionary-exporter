@@ -1,6 +1,6 @@
 {
   "name": "ime-dictionary-exporter",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "private": true,
   "description": "Multi-platform IME Custom Dictionary Exporter",
   "type": "module",

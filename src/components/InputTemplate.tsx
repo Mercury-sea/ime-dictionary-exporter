@@ -1,0 +1,4 @@
+import {inputSchemes,type InputScheme} from '@/lib/input-schemes';
+export function InputTemplate({value,onChange,disabled}:{value:InputScheme;onChange:(value:InputScheme)=>void;disabled:boolean}){
+ return <fieldset className="input-template"><legend>输入模板</legend><div className="template-options">{Object.entries(inputSchemes).map(([id,template])=><label className="template-option" key={id}><input type="radio" name="input-template" value={id} checked={value===id} disabled={disabled} onChange={()=>onChange(id as InputScheme)}/><span><strong>{template.label}</strong><small>{template.summary}</small></span></label>)}</div><p className="template-hint">{inputSchemes[value].hint}</p>{value==='double'&&<p className="template-hint">不同双拼方案的键位不同；例如「你好」在小鹤双拼中写作 nihc。</p>}{value==='wubi'&&<p className="template-hint">86／98／新世纪的具体编码请按所用方案填写；例如五笔 86「好」为 vbg。</p>}<p className="template-note">模板设置填写规则和示例，不自动转换编码或添加词条。</p></fieldset>;
+}

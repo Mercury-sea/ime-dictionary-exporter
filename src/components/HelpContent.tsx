@@ -1,8 +1,4 @@
-import { Fragment, useState, type ReactNode } from 'react';
-import { Button } from '@/components/ui/button';
-import { formats, type Format } from '@/lib/lexicon';
-import { guides } from '@/lib/export';
-import usage from '../../docs/使用说明.md';
+import { Fragment, type ReactNode } from 'react';
 import counts from '../../docs/词库数量说明.md';
 import source from '../../docs/词库来源.md';
 
@@ -20,14 +16,6 @@ function HelpDocument({text}:{text:string}){
  return <div className="help-document">{blocks}</div>;
 }
 function licenses():{project:string;thirdParty:string}{try{return JSON.parse(document.getElementById('license-data')?.textContent||'{}');}catch{return {project:'',thirdParty:''};}}
-export function HelpContent({onBackup,updated}:{onBackup:()=>void;updated:string}){
- const [section,setSection]=useState('usage');const legal=licenses();
- return <>
-  <nav className="guide-menu" aria-label="指南章节">{[['usage','使用说明'],['counts','数量说明'],['source','词库来源']].map(([id,label])=><button key={id} aria-pressed={section===id} onClick={()=>setSection(id)}>{label}</button>)}</nav>
-  <div key={section} className="help-content guide-body">
-   {section==='usage'&&<><HelpDocument text={usage}/><h3>各输入法导入方式</h3><div className="help-formats">{Object.entries(formats).map(([id,name])=><details key={id}><summary>{name}</summary><p>{guides[id as Format]}</p></details>)}</div><small>最近保存：{updated?new Date(updated).toLocaleString('zh-CN'):'—'}</small><Button variant="outline" onClick={onBackup}>下载完整备份</Button></>}
-   {section==='counts'&&<HelpDocument text={counts}/>}
-   {section==='source'&&<><HelpDocument text={source}/><details className="license-details"><summary>程序许可（MIT）</summary><pre>{legal.project}</pre></details><details className="license-details"><summary>第三方组件许可</summary><pre>{legal.thirdParty}</pre></details></>}
-  </div>
- </>;
-}
+export function AboutLexicon(){const legal=licenses();return <details className="pw-about"><summary>关于词库编辑器</summary>
+ <details><summary>词库来源</summary><HelpDocument text={source}/></details><details><summary>词库数量说明</summary><HelpDocument text={counts}/></details>
+ <details className="license-details"><summary>程序许可（MIT）</summary><pre>{legal.project}</pre></details><details className="license-details"><summary>第三方组件许可</summary><pre>{legal.thirdParty}</pre></details></details>;}

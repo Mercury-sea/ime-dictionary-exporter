@@ -6,10 +6,10 @@ import { dirname, resolve, join } from 'node:path';
 const root=resolve(import.meta.dirname,'..');process.chdir(root);
 await mkdir('dist',{recursive:true});
 const js=await build({entryPoints:['src/main.tsx'],bundle:true,write:false,minify:true,format:'iife',platform:'browser',target:['chrome100','firefox100','safari15.4'],jsx:'automatic',loader:{'.md':'text'},metafile:true,legalComments:'inline',define:{'process.env.NODE_ENV':'"production"'},tsconfig:'tsconfig.json'});
-const css=await postcss([tailwind()]).process(await readFile('src/styles.css','utf8'),{from:resolve('src/styles.css'),map:false});
+const css=await postcss([tailwind({base:root})]).process((await readFile('src/styles.css','utf8'))+'\n'+(await readFile('src/grid-register.css','utf8'))+'\n'+(await readFile('src/flow.css','utf8')),{from:resolve('src/styles.css'),map:false});
 const favicon=await readFile('src/favicon.svg','utf8');
 const script=js.outputFiles[0].text.replace(/<\/script/gi,'<\\/script');
-let html=`<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"><title>多平台输入法自定义词库导出器</title><link rel="icon" href="data:image/svg+xml,${encodeURIComponent(favicon)}"><style>${css.css.replace(/<\/style/gi,'<\\/style')}</style></head><body><div id="root"></div><noscript>请启用浏览器 JavaScript 后重新打开。本工具不需要联网。</noscript><script>${script}</script></body></html>`;
+let html=`<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"><title>词库编辑器</title><link rel="icon" href="data:image/svg+xml,${encodeURIComponent(favicon)}"><style>${css.css.replace(/<\/style/gi,'<\\/style')}</style></head><body><div id="root"></div><noscript>请启用浏览器 JavaScript 后重新打开。本工具不需要联网。</noscript><script>${script}</script></body></html>`;
 await writeFile('dist/.nojekyll','');
 await writeFile('dist/LICENSE',await readFile('LICENSE'));
 // Record licenses from bundled packages; the release also includes the vendored CSS license.

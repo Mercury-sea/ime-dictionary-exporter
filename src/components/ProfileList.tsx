@@ -85,7 +85,7 @@ export function ProfileList({ profiles, active, disabled, onSelect, onMove, onDe
             onSave={name => onRename(profile.id, name)} maxLength={40}>
             <span>{profile.name}</span>
           </InlineEdit>
-          <small title="按输入码＋词条计数">{profile.entries.length} 条</small>
+          <small>{new Set(profile.entries.map(e=>e.phrase)).size} 个词条 · {profile.entries.length} 个输入码</small>
         </div>
         <button className="profile-delete" disabled={disabled || profiles.length < 2} aria-label={`删除词库 ${profile.name}`}
           title={profiles.length < 2 ? '至少保留一个词库方案' : `删除词库 ${profile.name}`}
